@@ -5,17 +5,20 @@ from dotenv import load_dotenv
 from jsonargparse import CLI
 
 from . import LLMNeedleHaystackTester, LLMMultiNeedleHaystackTester
-from .evaluators import Evaluator, LangSmithEvaluator, OpenAIEvaluator
-from .providers import Anthropic, ModelProvider, OpenAI, Cohere
+# from .evaluators import Evaluator, LangSmithEvaluator, OpenAIEvaluator, Llama3_1_Evaluator
+# from .providers import Anthropic, ModelProvider, OpenAI, Cohere, Llama3_1
+from .evaluators import Evaluator, Llama3_1_Evaluator
+from .providers import ModelProvider, Llama3_1
+
 
 load_dotenv()
 
 @dataclass
 class CommandArgs():
-    provider: str = "openai"
-    evaluator: str = "openai"
-    model_name: str = "gpt-3.5-turbo-0125"
-    evaluator_model_name: Optional[str] = "gpt-3.5-turbo-0125"
+    provider: str = "llama3.1"
+    evaluator: str = "llama3.1"
+    model_name: str = "llama3.1-8B-Instruct-GPTQ"
+    evaluator_model_name: Optional[str] = "qwen2.5-3B"
     needle: Optional[str] = "\nThe best thing to do in San Francisco is eat a sandwich and sit in Dolores Park on a sunny day.\n"
     haystack_dir: Optional[str] = "PaulGrahamEssays"
     retrieval_question: Optional[str] = "What is the best thing to do in San Francisco?"
@@ -58,15 +61,17 @@ def get_model_to_test(args: CommandArgs) -> ModelProvider:
     Raises:
         ValueError: If the specified provider is not supported.
     """
-    match args.provider.lower():
-        case "openai":
-            return OpenAI(model_name=args.model_name)
-        case "anthropic":
-            return Anthropic(model_name=args.model_name)
-        case "cohere":
-            return Cohere(model_name=args.model_name)
-        case _:
-            raise ValueError(f"Invalid provider: {args.provider}")
+    # match args.provider.lower():
+    # if args.provider.lower() == "openai":
+    #         return OpenAI(model_name=args.model_name)
+    # elif args.provider.lower() == "anthropic":
+    #     return Anthropic(model_name=args.model_name)
+    # elif args.provider.lower() == "cohere":
+    #     return Cohere(model_name=args.model_name)
+    if args.provider.lower() == "llama3.1":
+        return Llama3_1(model_name=args.model_name)
+    else:
+        raise ValueError(f"Invalid provider: {args.provider}")
 
 def get_evaluator(args: CommandArgs) -> Evaluator:
     """
@@ -81,15 +86,19 @@ def get_evaluator(args: CommandArgs) -> Evaluator:
     Raises:
         ValueError: If the specified evaluator is not supported.
     """
-    match args.evaluator.lower():
-        case "openai":
-            return OpenAIEvaluator(model_name=args.evaluator_model_name,
-                                   question_asked=args.retrieval_question,
-                                   true_answer=args.needle)
-        case "langsmith":
-            return LangSmithEvaluator()
-        case _:
-            raise ValueError(f"Invalid evaluator: {args.evaluator}")
+    # match args.evaluator.lower():
+    # if args.evaluator.lower() == "openai":
+    #     return OpenAIEvaluator(model_name=args.evaluator_model_name,
+    #                             question_asked=args.retrieval_question,
+    #                             true_answer=args.needle)
+    # elif args.evaluator.lower() == "langsmith":
+    #     return LangSmithEvaluator()
+    if args.evaluator.lower() == "llama3.1":
+        return Llama3_1_Evaluator(model_name=args.evaluator_model_name,
+                                  question_asked=args.retrieval_question,
+                                  true_answer=args.needle)
+    else:
+        raise ValueError(f"Invalid evaluator: {args.evaluator}")
 
 def main():
     """

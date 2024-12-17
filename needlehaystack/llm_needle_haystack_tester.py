@@ -155,10 +155,10 @@ class LLMNeedleHaystackTester:
 
         test_end_time = time.time()
         test_elapsed_time = test_end_time - test_start_time
-
+        print("-- evaluate_and_log time: \n", test_elapsed_time)
         # Compare the reponse to the actual needle you placed
         score = self.evaluation_model.evaluate_response(response)
-
+        print("-----------  score: ", score)
         results = {
             # 'context' : context, # Uncomment this line if you'd like to save the context the model was asked to retrieve from. Warning: This will become very large.
             'model' : self.model_name,
