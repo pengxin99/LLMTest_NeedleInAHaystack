@@ -10,7 +10,8 @@ import glob
 
 # Path to the directory containing JSON results
 folder_path = '../original_results/Anthropic_original_results/'  # Replace with your folder path
-folder_path = ".\\results"  # Replace with your folder path
+folder_path = "C:\\Users\\Local_Admin\\Desktop\\yuchen\\lowBitCompute\\accuracy\\LLMTest_NeedleInAHaystack\\results_fp16_gemm"  # Replace with your folder path
+folder_path = "..\\results_int8_gemm"  # Replace with your folder path
 
 # Using glob to find all json files in the directory
 json_files = glob.glob(f"{folder_path}/*.json")
@@ -56,11 +57,14 @@ sns.heatmap(
     # annot=True,
     fmt="g",
     cmap=cmap,
-    cbar_kws={'label': 'Score'}
+    cbar_kws={'label': 'Score'},
+    vmax=10,
+    vmin=0,
+    linewidths=0.5
 )
 
 # More aesthetics
-plt.title('Pressure Testing LLama3.1-8B-GPTQ 128K Context\nFact Retrieval Across Context Lengths ("Needle In A HayStack")')  # Adds a title
+plt.title('Pressure Testing LLama3.1-8B-GPTQ INT8 Gemm\nFact Retrieval Across Context Lengths ("Needle In A HayStack")')  # Adds a title
 plt.xlabel('Token Limit')  # X-axis label
 plt.ylabel('Depth Percent')  # Y-axis label
 plt.xticks(rotation=45)  # Rotates the x-axis labels to prevent overlap

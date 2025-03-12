@@ -18,12 +18,15 @@ from transformers import (
     AutoConfig,
     AutoTokenizer,
     LlamaTokenizer,
+    TextStreamer,
 )
 
 
 from .model import ModelProvider
 model_dict ={
+    # "llama3.1-8B-Instruct-GPTQ": "C:\\Users\\Local_Admin\\Desktop\\workspace\\IPEX\\Models\\Meta-Llama-3.1-8B-Instruct-GPTQ-g32-nobias",
     "llama3.1-8B-Instruct-GPTQ": "C:\\Users\\Local_Admin\\Desktop\\workspace\\IPEX\\Models\\Meta-Llama-3.1-8B-Instruct-GPTQ",
+    # "llama3.1-8B-Instruct-GPTQ": "C:\\Users\\Local_Admin\\Desktop\\yuchen\\lowBitCompute\\DeepSeek-R1-Distill-Llama-8B-gptq-32g"
 }
 
 
@@ -88,12 +91,17 @@ class Llama3_1(ModelProvider):
         Returns:
             str: The content of the model's response to the prompt.
         """
+        if self.model is None:
+            self.__init__()
+
+        # self.model.to('xpu')
         text = self.tokenizer.apply_chat_template(prompt,
                                                   tokenize=False,
                                                   add_generation_prompt=True,
                                                   **self.model_kwargs
                                                   )
         model_inputs = self.tokenizer([text], return_tensors="pt").to(device)
+        streamer = TextStreamer(self.tokenizer, skip_prompt=True)
         
         generate_kwargs = dict(do_sample=False, cache_implementation='static') #static cache to improve perf        
         generated_ids = self.model.generate(model_inputs.input_ids, max_new_tokens=128, **generate_kwargs)
@@ -101,7 +109,11 @@ class Llama3_1(ModelProvider):
         generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
         
         response =  self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        # self.model.to('cpu')
         print("-------------------- AI: ", response)
+        self.model = None
+        torch.xpu.synchronize()
+        torch.xpu.empty_cache()
         
         return response
     

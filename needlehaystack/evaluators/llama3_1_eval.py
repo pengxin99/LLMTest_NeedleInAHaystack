@@ -15,8 +15,11 @@ device_map = 'xpu'
 device = "xpu"
 
 model_dict ={
+    # "llama3.1-8B-Instruct-GPTQ": "C:\\Users\\Local_Admin\\Desktop\\workspace\\IPEX\\Models\\Meta-Llama-3.1-8B-Instruct-GPTQ-g32-nobias",
     "llama3.1-8B-Instruct-GPTQ": "C:\\Users\\Local_Admin\\Desktop\\workspace\\IPEX\\Models\\Meta-Llama-3.1-8B-Instruct-GPTQ",
-    "qwen2.5-3B": "C:\\Users\\Local_Admin\\Desktop\\workspace\\IPEX\\Qwen2.5\\Qwen2.5-3B-Instruct"
+    # "llama3.1-8B-Instruct-GPTQ": "C:\\Users\\Local_Admin\\Desktop\\yuchen\\lowBitCompute\\DeepSeek-R1-Distill-Llama-8B-gptq-32g",
+    # "qwen2.5-3B": "C:\\Users\\Local_Admin\\Desktop\\workspace\\IPEX\\Qwen2.5\\Qwen2.5-3B-Instruct"
+    "qwen2.5-3B": "C:\\Users\\Local_Admin\\Desktop\\pengxin\\models\\Qwen2.5-3B-Instruct"
 }
 
 class Llama3_1_Evaluator(Evaluator):
@@ -136,6 +139,7 @@ class Llama3_1_Evaluator(Evaluator):
                                             device_map=device_map,
                                             torch_dtype=torch.float16)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+        streamer = TextStreamer(self.tokenizer, skip_prompt=True)
 
         print("------ evaluate_response prompt: ", prompt)
         text = self.tokenizer.apply_chat_template(prompt,
@@ -158,6 +162,9 @@ class Llama3_1_Evaluator(Evaluator):
 
         self.evaluator = None
         self.tokenizer = None
+
+        torch.xpu.synchronize()
+        torch.xpu.empty_cache()
 
         eval_result = LanguageDetector.markdown_to_json(eval_response)
         print('eval_result:', eval_result)
